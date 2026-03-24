@@ -1,0 +1,97 @@
+name: Daily Mini Project Generator
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Generate project
+        run: |
+          DATE=$(date +"%Y-%m-%d")
+          DIR="projects/project-$DATE"
+
+          mkdir -p "$DIR"
+
+          RANDOM_INDEX=$((RANDOM % 5))
+
+          if [ $RANDOM_INDEX -eq 0 ]; then
+cat <<'EOF' > "$DIR/index.js"
+// Password Generator
+function generatePassword(length = 12) {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+}
+console.log("Generated Password:", generatePassword());
+EOF
+
+          elif [ $RANDOM_INDEX -eq 1 ]; then
+cat <<'EOF' > "$DIR/index.js"
+// CLI Todo App
+let todos = ["Learn JS", "Build project"];
+todos.push("Push to GitHub");
+console.log("Todos:", todos);
+EOF
+
+          elif [ $RANDOM_INDEX -eq 2 ]; then
+cat <<'EOF' > "$DIR/index.js"
+// Random Quote Generator
+const quotes = ["Stay hard", "Code every day", "Ship fast"];
+const random = quotes[Math.floor(Math.random() * quotes.length)];
+console.log("Quote:", random);
+EOF
+
+          elif [ $RANDOM_INDEX -eq 3 ]; then
+cat <<'EOF' > "$DIR/index.js"
+// Basic Calculator
+function calc(a, b, op) {
+  return op === "+" ? a+b : op === "-" ? a-b : op === "*" ? a*b : a/b;
+}
+console.log("Result:", calc(5, 3, "+"));
+EOF
+
+          else
+cat <<'EOF' > "$DIR/index.js"
+// UUID Generator
+function uuid() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+    const r = Math.random()*16|0;
+    return (c === "x" ? r : (r&0x3|0x8)).toString(16);
+  });
+}
+console.log("UUID:", uuid());
+EOF
+          fi
+
+          # README (THIS is where your previous error was)
+cat <<EOF > "$DIR/README.md"
+# Project $DATE
+
+Auto-generated JavaScript mini project.
+
+## Run
+node index.js
+
+Generated on $DATE
+EOF
+
+      - name: Commit and push
+        run: |
+          git config --global user.name "YOUR_GITHUB_USERNAME"
+          git config --global user.email "YOUR_EMAIL@users.noreply.github.com"
+
+          git add projects/
+
+          git commit -m "feat: add mini project for $(date +"%Y-%m-%d")" || exit 0
+          git push
