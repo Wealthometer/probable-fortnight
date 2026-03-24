@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          persist-credentials: true
 
       - name: Generate project
         run: |
@@ -24,74 +22,42 @@ jobs:
 
           mkdir -p "$DIR"
 
-          RANDOM_INDEX=$((RANDOM % 5))
+          RANDOM_INDEX=$((RANDOM % 3))
 
-          if [ $RANDOM_INDEX -eq 0 ]; then
-cat <<'EOF' > "$DIR/index.js"
-// Password Generator
+          if [ "$RANDOM_INDEX" -eq 0 ]; then
+            echo '// Password Generator
 function generatePassword(length = 12) {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
-console.log("Generated Password:", generatePassword());
-EOF
+console.log(generatePassword());' > "$DIR/index.js"
 
-          elif [ $RANDOM_INDEX -eq 1 ]; then
-cat <<'EOF' > "$DIR/index.js"
-// CLI Todo App
+          elif [ "$RANDOM_INDEX" -eq 1 ]; then
+            echo '// Todo App
 let todos = ["Learn JS", "Build project"];
 todos.push("Push to GitHub");
-console.log("Todos:", todos);
-EOF
-
-          elif [ $RANDOM_INDEX -eq 2 ]; then
-cat <<'EOF' > "$DIR/index.js"
-// Random Quote Generator
-const quotes = ["Stay hard", "Code every day", "Ship fast"];
-const random = quotes[Math.floor(Math.random() * quotes.length)];
-console.log("Quote:", random);
-EOF
-
-          elif [ $RANDOM_INDEX -eq 3 ]; then
-cat <<'EOF' > "$DIR/index.js"
-// Basic Calculator
-function calc(a, b, op) {
-  return op === "+" ? a+b : op === "-" ? a-b : op === "*" ? a*b : a/b;
-}
-console.log("Result:", calc(5, 3, "+"));
-EOF
+console.log(todos);' > "$DIR/index.js"
 
           else
-cat <<'EOF' > "$DIR/index.js"
-// UUID Generator
-function uuid() {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
-    const r = Math.random()*16|0;
-    return (c === "x" ? r : (r&0x3|0x8)).toString(16);
-  });
-}
-console.log("UUID:", uuid());
-EOF
+            echo '// Random Quote
+const quotes = ["Code daily", "Stay consistent", "Ship fast"];
+console.log(quotes[Math.floor(Math.random() * quotes.length)]);' > "$DIR/index.js"
           fi
 
-          # README (THIS is where your previous error was)
-cat <<EOF > "$DIR/README.md"
-# Project $DATE
+          echo "# Project $DATE
 
-Auto-generated JavaScript mini project.
+Auto-generated mini project.
 
-## Run
+Run:
 node index.js
 
-Generated on $DATE
-EOF
+Generated on $DATE" > "$DIR/README.md"
 
       - name: Commit and push
         run: |
-          git config --global user.name "YOUR_GITHUB_USERNAME"
-          git config --global user.email "YOUR_EMAIL@users.noreply.github.com"
+          git config user.name "YOUR_GITHUB_USERNAME"
+          git config user.email "YOUR_EMAIL@users.noreply.github.com"
 
           git add projects/
-
-          git commit -m "feat: add mini project for $(date +"%Y-%m-%d")" || exit 0
+          git commit -m "feat: add mini project for $DATE" || exit 0
           git push
